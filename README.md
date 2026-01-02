@@ -1,26 +1,3 @@
-<p align="center">
-  <div>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python" width="50"/>
-    <br>Python
-  </div>
-  <div>
-    <img src="https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg" alt="MongoDB" width="50"/>
-    <br>MongoDB
-  </div>
-  <div>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Google_Gemini_logo_2023.svg/200px-Google_Gemini_logo_2023.svg.png" alt="Google Gemini" width="50"/>
-    <br>Gemini AI
-  </div>
-  <div>
-    <img src="https://git-scm.com/images/logos/downloads/Git-Icon-1788C.png" alt="Git" width="50"/>
-    <br>Git
-  </div>
-  <div>
-    <img src="https://www.svgrepo.com/show/513512/command-line.svg" alt="CLI" width="50"/>
-    <br>CLI
-  </div>
-</p>
-
 # Git Whisperer
 Turn commit history into a human story
 
