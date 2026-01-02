@@ -11,7 +11,123 @@ what problem the project tried to solve, how it evolved, and what actually matte
 This is not code analysis.
 This is engineering storytelling.
 
-## Problem
+## 🚀 Quick Start
+
+### First Time Setup
+Git Whisperer includes an **interactive setup wizard** that guides you through configuration:
+
+```bash
+# Clone and enter the repository
+git clone <repository-url>
+cd git-whisperer
+
+# Run Git Whisperer (first run will guide you through setup)
+python main.py /path/to/your/git/repo
+```
+
+The setup wizard will:
+- ✅ Prompt for your Gemini API key
+- ✅ Test MongoDB connection
+- ✅ Offer to start local MongoDB with Docker if needed
+- ✅ Save configuration to `.env` for future runs
+
+### Manual Setup (Optional)
+If you prefer manual configuration:
+
+1. Copy the environment template:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` with your configuration:
+   ```bash
+   GEMINI_API_KEY=your_actual_api_key_here
+   MONGODB_URL=mongodb://localhost:27017/
+   ```
+
+### Running Analysis
+```bash
+# Analyze any git repository
+python main.py /path/to/git/repo
+
+# Analyze current directory
+python main.py .
+```
+
+## 🔧 Configuration
+
+Git Whisperer uses environment variables for configuration. The interactive setup creates a `.env` file with:
+
+- `GEMINI_API_KEY`: Your Google Gemini API key
+- `MONGODB_URL`: MongoDB connection string (default: `mongodb://localhost:27017/`)
+- `MONGODB_DB`: Database name (default: `git_whisperer_db`)
+- `LOG_LEVEL`: Logging verbosity (default: `INFO`)
+
+See `.env.example` for all available options.
+
+## 🎨 CLI Interface
+
+Git Whisperer features a beautiful, colored CLI interface powered by [Rich](https://github.com/Textualize/rich):
+
+- **Colored Logging**: Informative messages with emojis and colors
+- **Progress Indicators**: Real-time status updates during analysis
+- **Rich Panels**: Formatted output with borders and styling
+- **Error Handling**: Clear error messages with troubleshooting tips
+
+Example output includes:
+- Repository analysis summary with commit counts
+- AI-generated project stories in styled panels
+- Progress bars for long-running operations
+- Color-coded status messages (✅ success, ❌ errors, ⚠️ warnings)
+
+### Development
+For development with live code reloading:
+```bash
+docker-compose -f docker/compose.yaml -f docker-compose.override.yaml up --build
+```
+
+### Local Development (without Docker)
+If you prefer to run locally:
+
+1. **Install uv** (fast Python package manager):
+   ```bash
+   # On macOS
+   brew install uv
+   
+   # Or install from https://github.com/astral-sh/uv
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   uv pip install -r pyproject.toml
+   ```
+
+3. **Set up environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your GEMINI_API_KEY
+   ```
+
+4. **Start MongoDB** (if running locally):
+   ```bash
+   brew install mongodb-community
+   brew services start mongodb-community
+   ```
+
+5. **Run the application**:
+   ```bash
+   uv run python main.py /path/to/your/git/repo
+   ```
+
+## ✨ Features
+
+- **🎯 Interactive Setup Wizard**: First-run configuration with API key and database setup
+- **🤖 AI-Powered Storytelling**: Uses Google's Gemini AI to generate human-readable project narratives
+- **💾 Smart Database Management**: Auto-detects and configures MongoDB (local Docker or remote)
+- **🎨 Beautiful CLI Interface**: Rich, colored output with progress indicators and panels
+- **📊 Git History Analysis**: Deep analysis of commit patterns and evolution
+- **🐳 Docker Integration**: Automatic MongoDB container management
+- **🔧 Flexible Configuration**: Environment-based configuration with automatic .env generation
 - Repos grow faster than documentation
 - Hackers forget why decisions were made
 - Demos become fragile explanations instead of clear narratives

@@ -1,0 +1,13 @@
+version: '3.8'
+
+# Development overrides
+services:
+  app:
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PYTHONPATH=/app
+    volumes:
+      - ..:/app
+    command: tail -f /dev/null  # Keep running for development
+    stdin_open: true
+    tty: true

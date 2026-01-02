@@ -1,2 +1,4 @@
 pymongo
 google-generativeai
+python-dotenv
+rich
