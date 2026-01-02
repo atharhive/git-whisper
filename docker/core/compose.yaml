@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    container_name: git-whisperer-core-app
+    volumes:
+      - ../..:/app
+      - /app/__pycache__
+    working_dir: /app
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PYTHONPATH=/app
+    networks:
+      - git-whisperer-core-network
+    command: tail -f /dev/null  # Keep container running for development
+
+
+networks:
+  git-whisperer-core-network:
+    driver: bridge

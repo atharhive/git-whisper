@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: git-whisperer-mongo-only
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: git_whisperer_db
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    networks:
+      - git-whisperer-mongo-network
+
+volumes:
+  mongo_data:
+  mongo_config:
+
+networks:
+  git-whisperer-mongo-network:
+    driver: bridge

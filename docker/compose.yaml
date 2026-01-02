@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: git-whisperer-app
+    volumes:
+      - ..:/app
+      - /app/__pycache__
+    working_dir: /app
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PYTHONPATH=/app
+    depends_on:
+      - mongodb
+    networks:
+      - git-whisperer-network
+    command: tail -f /dev/null  # Keep container running for development
+
+  mongodb:
+    image: mongo:7.0
+    container_name: git-whisperer-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: git_whisperer_db
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    networks:
+      - git-whisperer-network
+
+volumes:
+  mongo_data:
+  mongo_config:
+
+networks:
+  git-whisperer-network:
+    driver: bridge
