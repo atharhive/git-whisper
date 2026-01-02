@@ -16,7 +16,16 @@ class StoryEngine:
             raise ValueError("GEMINI_API_KEY environment variable not set and no API key provided.")
         
         genai.configure(api_key=self._api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.5-flash') # Changed model
+
+    def list_available_models(self):
+        """
+        Lists all available models and their supported generation methods.
+        """
+        print("--- Available Gemini Models ---")
+        for model in genai.list_models():
+            print(f"Name: {model.name}")
+            print(f"  Supported generation methods: {model.supported_generation_methods}\n")
 
     def generate_project_summary(self, commits):
         """
@@ -135,6 +144,8 @@ if __name__ == '__main__':
     
     try:
         engine = StoryEngine()
+        engine.list_available_models() # List models on run
+        
         print("\n--- Project Summary ---")
         summary = engine.generate_project_summary(example_commits)
         print(summary)
