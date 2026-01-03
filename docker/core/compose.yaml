@@ -8,15 +8,20 @@ services:
     container_name: git-whisperer-core-app
     volumes:
       - ../..:/app
-      - /app/__pycache__
+      - /app/target  # Exclude target directory from volume mount
     working_dir: /app
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - PYTHONPATH=/app
+      - MONGODB_URL=mongodb://mongodb:27017/
+      - MONGODB_DB=git_whisperer_db
+      - MONGODB_COLLECTION=project_history
+      - LOG_LEVEL=INFO
     networks:
       - git-whisperer-core-network
-    command: tail -f /dev/null  # Keep container running for development
-
+    # Keep container running for development/interactive use
+    stdin_open: true
+    tty: true
+    command: ["tail", "-f", "/dev/null"]
 
 networks:
   git-whisperer-core-network:

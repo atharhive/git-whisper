@@ -3,6 +3,8 @@ Turn commit history into a human story
 
 > **Now written in Rust** for blazing-fast performance and single-binary distribution!
 
+**Binary Name**: `whisper` (not `git-whisperer`)
+
 ## Vision
 Git Whisperer exists to solve a quiet but universal hacker problem:
 we build things faster than we can explain them.
@@ -15,7 +17,26 @@ This is engineering storytelling.
 
 ## 🚀 Quick Start
 
-### Build from Source
+### Option 1: Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd git-whisperer
+
+# Start with Docker (includes MongoDB)
+docker-compose -f docker/compose.yaml up -d
+
+# Run setup wizard
+docker-compose -f docker/compose.yaml exec app whisper setup
+
+# Analyze a repository
+docker-compose -f docker/compose.yaml exec app whisper add <repo-url>
+docker-compose -f docker/compose.yaml exec app whisper summary
+```
+
+### Option 2: Build from Source
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -25,42 +46,26 @@ cd git-whisperer
 cargo build --release
 
 # Run setup wizard
-./target/release/git-whisperer setup
+./target/release/whisper setup
 
 # Analyze a repository
-./target/release/git-whisperer /path/to/your/repo
+./target/release/whisper add <repo-url>
+./target/release/whisper summary
+./target/release/whisper summary
 ```
 
-### First Time Setup
-Git Whisperer includes an **interactive setup wizard** that guides you through configuration:
+### Option 3: Install via Cargo
 
 ```bash
-git-whisperer setup
-```
+# Install globally
+cargo install --git https://github.com/atharhive/git-whisperer
 
-The setup wizard will:
-- ✅ Prompt for your Gemini API key
-- ✅ Test the API connection
-- ✅ Let you choose MongoDB setup (local Docker, Atlas cloud, or custom)
-- ✅ Test the database connection
-- ✅ Save configuration to `.env` for future runs
+# Run setup
+whisper setup
 
-See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed instructions on getting API keys and MongoDB setup.
-
-### Running Analysis
-```bash
-# Analyze any git repository (local path)
-git-whisperer /path/to/git/repo
-
-# Analyze current directory
-git-whisperer .
-
-# Clone and analyze from URL (GitHub, GitLab, etc.)
-git-whisperer https://github.com/username/repo
-git-whisperer git@github.com:username/repo.git
-
-# Or use the explicit command
-git-whisperer analyze /path/to/repo
+# Use
+whisper add <repo-url>
+whisper summary
 ```
 
 ## 🔧 Configuration
@@ -69,28 +74,65 @@ Git Whisperer uses environment variables for configuration. The interactive setu
 
 - `GEMINI_API_KEY`: Your Google Gemini API key ([Get one here](https://makersuite.google.com/app/apikey))
 - `MONGODB_URL`: MongoDB connection string
+  - Docker: `mongodb://mongodb:27017/` (internal container networking)
   - Local: `mongodb://localhost:27017/`
   - Atlas: `mongodb+srv://user:pass@cluster.mongodb.net/...`
 - `MONGODB_DB`: Database name (default: `git_whisperer_db`)
 - `MONGODB_COLLECTION`: Collection name (default: `project_history`)
 - `LOG_LEVEL`: Logging verbosity (default: `INFO`)
 
-See `.env.example` for all available options and [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed setup instructions.
+### Docker Configuration
+
+When using Docker, the setup automatically configures the correct MongoDB URL for container networking. The `.env` file is mounted into the container.
+
+For development with live code reloading:
+```bash
+docker-compose -f docker/compose.yaml -f docker-compose.override.yaml up -d
+```
+
+See [docker/README.md](docker/README.md) for detailed Docker setup instructions and [SETUP_GUIDE.md](SETUP_GUIDE.md) for manual configuration.
 
 ## 🎨 CLI Interface
 
-Git Whisperer features a beautiful, colored CLI interface:
+Git Whisperer features a beautiful, colored CLI interface with automatic setup prompting:
 
+```bash
+whisper --help
+```
+
+**Available Commands:**
+- `whisper setup` - Interactive setup wizard (runs automatically if needed)
+- `whisper add <repo>` - Add/clone and analyze a repository
+- `whisper summary` - Generate full project story from git history
+- `whisper demo` - Create a 60-90 second demo script
+- `whisper last [count]` - Explain recent commits (default: 5)
+- `whisper since <ref>` - Changes since commit/tag/date
+- `whisper changelog` - Generate clean changelog by type
+- `whisper <repo-url>` - Quick mode: add repo and show summary
+
+**Example Usage:**
+```bash
+# Quick analysis
+whisper https://github.com/microsoft/vscode
+
+# Step-by-step workflow
+whisper add https://github.com/microsoft/vscode
+whisper summary
+whisper demo
+whisper changelog
+
+# Analyze recent work
+whisper last 10
+whisper since v1.0.0
+whisper since "2024-01-01"
+```
+
+**Features:**
 - **Colored Output**: Informative messages with emojis and colors
 - **Progress Indicators**: Real-time spinners during analysis
 - **Formatted Panels**: Clean, bordered output for results
 - **Error Handling**: Clear error messages with troubleshooting tips
-
-Example output includes:
-- Repository analysis summary with commit counts
-- AI-generated project stories in styled panels
-- Progress spinners for long-running operations
-- Color-coded status messages (✅ success, ❌ errors, ⚠️ warnings)
+- **Auto-Setup**: Automatically prompts for configuration if not set up
 
 ## 🦀 Why Rust?
 
@@ -106,21 +148,48 @@ This is a complete rewrite from Python with significant improvements:
 
 The Rust version is production-ready and can be distributed via `cargo install` or as a standalone binary.
 
+## 🐳 Docker Deployment
+
+Git Whisperer includes complete Docker support for easy deployment:
+
+### Quick Docker Setup
+```bash
+# Full stack with MongoDB
+docker-compose -f docker/compose.yaml up -d
+
+# Development with live reloading
+docker-compose -f docker/compose.yaml -f docker-compose.override.yaml up -d
+
+# Run commands
+docker-compose -f docker/compose.yaml exec app whisper add <repo-url>
+```
+
+### Docker Benefits
+- **Zero Configuration**: Everything included and configured
+- **Database Included**: MongoDB runs automatically in container
+- **Development Ready**: Volume mounts for live code reloading
+- **Production Ready**: Multi-stage builds for minimal images
+- **Cross-Platform**: Same setup on Linux, Mac, Windows
+
+See [docker/README.md](docker/README.md) for detailed Docker instructions.
+
 ## ✨ Features
 
 - **🚀 Blazing Fast**: Written in Rust for maximum performance
 - **📦 Single Binary**: No dependencies, just download and run
+- **🐳 Docker Ready**: Complete containerized setup with MongoDB
+- **🎯 Auto-Setup Wizard**: First-run configuration with API key and database setup
 - **🌐 URL Support**: Analyze repos directly from GitHub/GitLab URLs or local paths
-- **🎯 Interactive Setup Wizard**: First-run configuration with API key and database setup
 - **🤖 AI-Powered Storytelling**: Uses Google's Gemini AI to generate human-readable project narratives
 - **💾 Flexible Database**: Supports local MongoDB (Docker), MongoDB Atlas (cloud), or custom instances
 - **🎨 Beautiful CLI Interface**: Colored output with progress indicators and formatted panels
 - **📊 Git History Analysis**: Deep analysis of commit patterns and evolution using libgit2
-- **🐳 Docker Integration**: Automatic MongoDB container management
 - **🔧 Smart Configuration**: Environment-based configuration with automatic .env generation
 - **🔒 Secure**: Password masking in output, no credentials exposed
+- **⚡ Quick Mode**: Single command to analyze and summarize any repository
 ## 🛠️ Development
 
+### Local Development
 ```bash
 # Run in dev mode
 cargo run -- /path/to/repo
@@ -138,6 +207,34 @@ cargo test
 cargo check
 ```
 
+### Docker Development
+```bash
+# Start development environment
+docker-compose -f docker/compose.yaml -f docker-compose.override.yaml up -d
+
+# Run commands in container
+docker-compose -f docker/compose.yaml exec app whisper setup
+docker-compose -f docker/compose.yaml exec app whisper add <repo-url>
+
+# View logs
+docker-compose -f docker/compose.yaml logs -f app
+
+# Stop services
+docker-compose -f docker/compose.yaml down
+```
+
+### Building Docker Image
+```bash
+# Build for local testing
+docker build -f docker/Dockerfile -t whisper .
+
+# Run locally
+docker run -it --rm \
+  -e GEMINI_API_KEY=your_key \
+  -e MONGODB_URL=mongodb://host:port \
+  whisper --help
+```
+
 ## 📁 Project Structure
 
 ```
@@ -146,15 +243,32 @@ git-whisperer/
 │   ├── main.rs           # CLI entry point with clap
 │   ├── cli/              # Command handlers
 │   │   ├── setup.rs      # Interactive setup wizard
+│   │   ├── add.rs        # Repository addition
 │   │   ├── analyze.rs    # Repository analysis
-│   │   └── help.rs       # Help text
+│   │   ├── summary.rs    # Project summary generation
+│   │   ├── demo.rs       # Demo script creation
+│   │   ├── last.rs       # Recent commits analysis
+│   │   ├── since.rs      # Changes since reference
+│   │   ├── changelog.rs  # Changelog generation
+│   │   └── mod.rs        # Module declarations
 │   ├── repository.rs     # Git parsing with libgit2
 │   ├── gemini.rs         # Gemini API client
 │   ├── storage.rs        # MongoDB operations
-│   └── config.rs         # Configuration management
-├── python-legacy/        # Original Python implementation
-├── SETUP_GUIDE.md        # Detailed setup instructions
-└── Cargo.toml            # Rust dependencies
+│   ├── config.rs         # Configuration management
+│   └── workspace.rs      # Workspace management
+├── docker/
+│   ├── compose.yaml      # Full stack (app + mongodb)
+│   ├── core/compose.yaml # App only (requires external mongodb)
+│   ├── mongo/compose.yaml# MongoDB only
+│   ├── Dockerfile        # Rust application build
+│   └── README.md         # Docker setup guide
+├── Cargo.toml            # Rust dependencies
+├── Cargo.lock            # Dependency lock file
+├── .env.example          # Environment template
+├── .dockerignore         # Docker build exclusions
+├── docker-compose.override.yaml # Development overrides
+├── README.md             # This file
+└── SETUP_GUIDE.md        # Detailed setup instructions
 ```
 
 ## 🐍 Python Version
@@ -208,7 +322,7 @@ No CI. No GitHub auth. No cloud dependency for ingestion.
 
 ## How It Works (Step-by-Step)
 1.  User runs Git Whisperer locally inside a git repo
-    - Example: `git-whisperer analyze`
+    - Example: `whisper add <repo-url>` or `whisper summary`
 2.  Git Whisperer executes:
     - `git log --oneline --stat`
 3.  Parses commit messages and change stats
@@ -220,7 +334,7 @@ No CI. No GitHub auth. No cloud dependency for ingestion.
     - Project narrative
     - Changelog
     - Demo script
-7.  Results are displayed in a simple UI or CLI output
+7.  Results are displayed in a beautiful CLI interface
 
 ## Why Local-First?
 - Works offline

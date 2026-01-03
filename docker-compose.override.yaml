@@ -5,9 +5,20 @@ services:
   app:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - PYTHONPATH=/app
+      - MONGODB_URL=mongodb://mongodb:27017/
+      - MONGODB_DB=git_whisperer_db
+      - MONGODB_COLLECTION=project_history
+      - LOG_LEVEL=DEBUG
+      - RUST_BACKTRACE=1
     volumes:
       - ..:/app
-    command: tail -f /dev/null  # Keep running for development
+      - /app/target  # Exclude target directory for faster rebuilds
+    # Override the default command to keep container running
+    command: ["tail", "-f", "/dev/null"]
     stdin_open: true
     tty: true
+
+  mongodb:
+    # Expose additional ports for development
+    ports:
+      - "27017:27017"

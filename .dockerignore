@@ -1,23 +1,39 @@
-# Docker ignore file
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
+# Rust build artifacts
+target/
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
-.git
+
+# Temporary files
+tmp/
+temp/
+
+# Docker files (avoid recursive copying)
+docker/
+
+# Documentation
+README.md
+SETUP_GUIDE.md
+*.md
 .mypy_cache
 .pytest_cache
 .hypothesis
