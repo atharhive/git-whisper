@@ -1,4 +1,4 @@
-# Git Whisperer
+# Git Whisper
 Turn commit history into a human story
 
 > **Now written in Rust** for blazing-fast performance and single-binary distribution!
