@@ -1,6 +1,7 @@
 use anyhow::{Result, Context};
 use serde::{Deserialize, Serialize};
 use std::fs;
+use colored::Colorize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -71,6 +72,27 @@ impl Config {
             mongodb_collection,
             log_level,
         })
+    }
+    
+    pub async fn load_or_setup() -> Result<Self> {
+        let config = Self::load_or_default()?;
+        
+        // Check if setup is needed
+        if config.gemini_api_key.is_empty() || config.mongodb_url.is_empty() || config.mongodb_url == "mongodb://localhost:27017/" {
+            println!();
+            println!("{}", "╔═══════════════════════════════════════╗".bright_yellow());
+            println!("{}", "║           ⚠️  Setup Required          ║".bright_yellow().bold());
+            println!("{}", "║                                       ║".bright_yellow());
+            println!("{}", "║ Configuration incomplete. Starting    ║".bright_yellow());
+            println!("{}", "║ setup wizard...                       ║".bright_yellow());
+            println!("{}", "╚═══════════════════════════════════════╝".bright_yellow());
+            println!();
+            crate::cli::setup::run_setup().await?;
+            // Reload after setup
+            return Self::load();
+        }
+        
+        Ok(config)
     }
     
     pub fn save(&self) -> Result<()> {
