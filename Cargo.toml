@@ -1,7 +1,11 @@
 [package]
-name = "git-whisperer"
+name = "whisper"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "whisper"
+path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
@@ -19,3 +23,5 @@ git2 = "0.19"
 futures = "0.3"
 tempfile = "3.8"
 url = "2.5"
+dirs = "5.0"
+chrono = "0.4"
