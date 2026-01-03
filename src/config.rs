@@ -77,8 +77,8 @@ impl Config {
     pub async fn load_or_setup() -> Result<Self> {
         let config = Self::load_or_default()?;
         
-        // Check if setup is needed
-        if config.gemini_api_key.is_empty() || config.mongodb_url.is_empty() || config.mongodb_url == "mongodb://localhost:27017/" {
+        // Check if setup is needed - only if API key is missing
+        if config.gemini_api_key.is_empty() {
             println!();
             println!("{}", "╔═══════════════════════════════════════╗".bright_yellow());
             println!("{}", "║           ⚠️  Setup Required          ║".bright_yellow().bold());
