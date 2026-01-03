@@ -12,17 +12,26 @@ pub async fn run_add(repo: &str) -> Result<()> {
     let (actual_path, repo_name, url) = if is_url {
         println!("\n{}", "🌐 Cloning repository...".blue().bold());
         
-        let temp_dir = tempfile::tempdir()?;
-        let clone_path = temp_dir.path();
+        // Create permanent directory for cloned repos
+        let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Could not find home directory"))?;
+        let repos_dir = home.join(".whisper").join("repos");
+        std::fs::create_dir_all(&repos_dir)?;
+        
+        let name = repo.split('/').last().unwrap_or("repo").trim_end_matches(".git");
+        let clone_path = repos_dir.join(name);
+        
+        // Remove existing directory if it exists
+        if clone_path.exists() {
+            std::fs::remove_dir_all(&clone_path)?;
+        }
         
         let spinner = ProgressBar::new_spinner();
         spinner.set_style(ProgressStyle::default_spinner().template("{spinner:.green} {msg}").unwrap());
         spinner.set_message("Cloning...");
         
-        git2::Repository::clone(repo, clone_path)?;
+        git2::Repository::clone(repo, &clone_path)?;
         spinner.finish_with_message("✅ Cloned".green().to_string());
         
-        let name = repo.split('/').last().unwrap_or("repo").trim_end_matches(".git");
         (clone_path.to_str().unwrap().to_string(), name.to_string(), Some(repo.to_string()))
     } else {
         let name = std::path::Path::new(repo).file_name().unwrap().to_str().unwrap();
