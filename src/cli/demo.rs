@@ -17,7 +17,7 @@ pub async fn run_demo(repo: Option<&str>) -> Result<()> {
     // Take last 20 commits for demo
     commits.truncate(20);
     
-    let config = Config::load()?;
+    let config = Config::load_or_setup().await?;
     let client = GeminiClient::new(&config.gemini_api_key)?;
     
     let spinner = ProgressBar::new_spinner();

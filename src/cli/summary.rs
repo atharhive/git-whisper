@@ -14,7 +14,7 @@ pub async fn run_summary(repo: Option<&str>) -> Result<()> {
     let analyzer = GitAnalyzer::new(&path)?;
     let commits = analyzer.get_commits()?;
     
-    let config = Config::load()?;
+    let config = Config::load_or_setup().await?;
     let client = GeminiClient::new(&config.gemini_api_key)?;
     
     let spinner = ProgressBar::new_spinner();

@@ -24,7 +24,7 @@ pub async fn run_since(reference: &str, repo: Option<&str>) -> Result<()> {
         return Ok(());
     }
     
-    let config = Config::load()?;
+    let config = Config::load_or_setup().await?;
     let client = GeminiClient::new(&config.gemini_api_key)?;
     
     let prompt = format!(

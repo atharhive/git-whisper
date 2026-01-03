@@ -14,7 +14,7 @@ pub async fn run_last(count: usize, repo: Option<&str>) -> Result<()> {
     let mut commits = analyzer.get_commits()?;
     commits.truncate(count);
     
-    let config = Config::load()?;
+    let config = Config::load_or_setup().await?;
     let client = GeminiClient::new(&config.gemini_api_key)?;
     
     let prompt = format!(

@@ -9,7 +9,7 @@ use crate::gemini::GeminiClient;
 
 pub async fn run_analysis(repo_path: &str, generate_changelog: bool) -> Result<()> {
     // Load configuration
-    let config = Config::load().context("Configuration not found. Run 'git-whisperer setup' first.")?;
+    let config = Config::load_or_setup().await?;
     
     // Check if it's a URL or local path
     let is_url = repo_path.starts_with("http://") || repo_path.starts_with("https://") || repo_path.starts_with("git@");

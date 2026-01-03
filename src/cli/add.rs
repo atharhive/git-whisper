@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::Result;
 use colored::*;
 use indicatif::{ProgressBar, ProgressStyle};
 use crate::workspace::Workspace;
@@ -39,7 +39,7 @@ pub async fn run_add(repo: &str) -> Result<()> {
     spinner.finish_with_message(format!("✅ Found {} commits", commits.len()).green().to_string());
     
     // Store
-    let config = Config::load().context("Run 'whisper setup' first")?;
+    let config = Config::load_or_setup().await?;
     let spinner = ProgressBar::new_spinner();
     spinner.set_message("💾 Storing...");
     let store = MongoStore::new(&config).await?;
