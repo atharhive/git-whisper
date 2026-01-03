@@ -23,7 +23,8 @@ services:
     # Keep container running for development/interactive use
     stdin_open: true
     tty: true
-    command: ["tail", "-f", "/dev/null"]
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["tail -f /dev/null"]
 
   mongodb:
     image: mongo:7.0
