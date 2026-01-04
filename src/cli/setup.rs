@@ -79,79 +79,59 @@ pub async fn run_setup() -> Result<()> {
     println!("{}", "│                                                         │".bright_magenta());
 
     if config.mongodb_url.is_empty() || config.mongodb_url == "mongodb://localhost:27017/" {
-        println!("{}", "│ 🗄️  Choose your MongoDB setup:                         │".bright_magenta());
-        println!("{}", "│                                                         │".bright_magenta());
-        println!("{}", "│  1. 🐳 Local MongoDB with Docker (easiest)             │".bright_magenta());
-        println!("{}", "│  2. ☁️  MongoDB Atlas (cloud, free tier)               │".bright_magenta());
-        println!("{}", "│  3. 🔧 Custom MongoDB URL                              │".bright_magenta());
-        println!("{}", "│                                                         │".bright_magenta());
-        println!("{}", "└─────────────────────────────────────────────────────────┘".bright_magenta());
-        println!();
+        // Ask if user already has a MongoDB connection
+        let has_existing_connection = Confirm::new()
+            .with_prompt("🗄️  Do you already have a MongoDB connection (Atlas, local, etc.)?")
+            .default(false)
+            .interact()?;
 
-        let choice: String = Input::new()
-            .with_prompt("🎯 Enter your choice (1-3)")
-            .default("1".to_string())
-            .interact_text()?;
+        if has_existing_connection {
+            println!();
+            println!("{}", "┌─ Existing MongoDB Connection ───────────────────────────┐".bright_blue());
+            println!("{}", "│                                                         │".bright_blue());
+            println!("{}", "│ 🔗 Please provide your MongoDB connection string       │".bright_blue());
+            println!("{}", "│                                                         │".bright_blue());
+            println!("{}", "└─────────────────────────────────────────────────────────┘".bright_blue());
+            println!();
 
-        match choice.as_str() {
-            "1" => {
-                println!();
-                println!("{}", "🐳 Setting up local MongoDB with Docker...".cyan());
-                match start_docker_mongodb() {
-                    Ok(_) => {
-                        config.mongodb_url = "mongodb://localhost:27017/".to_string();
-                        println!("{}", "✅ Local MongoDB configured".green());
-                    }
-                    Err(e) => {
-                        println!("{}", format!("❌ Docker setup failed: {}", e).red());
-                        println!("{}", "💡 Please install Docker or choose another option.".yellow());
-                        anyhow::bail!("Docker MongoDB setup failed");
-                    }
+            let connection_string: String = Input::new()
+                .with_prompt("🔗 Enter your MongoDB connection string")
+                .interact_text()?;
+
+            if connection_string.trim().is_empty() {
+                println!("{}", "❌ Connection string cannot be empty.".red());
+                anyhow::bail!("MongoDB connection string is required");
+            }
+
+            config.mongodb_url = connection_string.trim().to_string();
+
+            // Validate the connection
+            println!();
+            println!("{}", "🔍 Validating connection...".cyan());
+            match MongoStore::new(&config).await {
+                Ok(_) => {
+                    println!("{}", "✅ Connection validated successfully".green());
+                }
+                Err(e) => {
+                    println!("{}", format!("❌ Connection validation failed: {}", e).red());
+                    println!("{}", "💡 Please check your connection string and try again.".yellow());
+                    anyhow::bail!("MongoDB connection validation failed");
                 }
             }
-            "2" => {
-                println!();
-                println!("{}", "┌─ MongoDB Atlas Setup Instructions ──────────────────────┐".bright_blue());
-                println!("{}", "│                                                         │".bright_blue());
-                println!("{}", "│ 📚 Follow these steps:                                  │".bright_blue());
-                println!("{}", "│  1. Go to https://www.mongodb.com/cloud/atlas/register  │".bright_blue());
-                println!("{}", "│  2. Create a free cluster                               │".bright_blue());
-                println!("{}", "│  3. Create a database user                              │".bright_blue());
-                println!("{}", "│  4. Get your connection string                          │".bright_blue());
-                println!("{}", "│                                                         │".bright_blue());
-                println!("{}", "└─────────────────────────────────────────────────────────┘".bright_blue());
-                println!();
-
-                let atlas_url: String = Input::new()
-                    .with_prompt("🔗 Enter your MongoDB Atlas connection string")
-                    .interact_text()?;
-
-                if atlas_url.trim().is_empty() {
-                    println!("{}", "❌ Connection string cannot be empty.".red());
-                    anyhow::bail!("MongoDB Atlas URL is required");
+        } else {
+            // No existing connection, set up local Docker instance
+            println!();
+            println!("{}", "🐳 Setting up local MongoDB with Docker...".cyan());
+            match start_docker_mongodb() {
+                Ok(_) => {
+                    config.mongodb_url = "mongodb://localhost:27017/".to_string();
+                    println!("{}", "✅ Local MongoDB configured".green());
                 }
-
-                config.mongodb_url = atlas_url.trim().to_string();
-                println!("{}", "✅ MongoDB Atlas configured".green());
-            }
-            "3" => {
-                println!();
-                let custom_url: String = Input::new()
-                    .with_prompt("🔗 Enter MongoDB connection URL")
-                    .default("mongodb://localhost:27017/".to_string())
-                    .interact_text()?;
-
-                if custom_url.trim().is_empty() {
-                    println!("{}", "❌ Connection URL cannot be empty.".red());
-                    anyhow::bail!("MongoDB URL is required");
+                Err(e) => {
+                    println!("{}", format!("❌ Docker setup failed: {}", e).red());
+                    println!("{}", "💡 Please install Docker or choose another option.".yellow());
+                    anyhow::bail!("Docker MongoDB setup failed");
                 }
-
-                config.mongodb_url = custom_url.trim().to_string();
-                println!("{}", "✅ Custom MongoDB URL configured".green());
-            }
-            _ => {
-                println!("{}", "❌ Invalid choice. Please run setup again.".red());
-                anyhow::bail!("Invalid MongoDB setup choice");
             }
         }
     } else {
@@ -247,6 +227,39 @@ fn start_docker_mongodb() -> Result<()> {
 
     println!("{}", "✅ Docker found".green());
 
+    // Check if Docker daemon is running
+    let daemon_check = Command::new("docker")
+        .args(&["info"])
+        .output();
+
+    if daemon_check.is_err() || !daemon_check.as_ref().unwrap().status.success() {
+        println!("{}", "❌ Docker daemon is not running.".red());
+        println!("{}", "💡 Please start Docker Desktop or Docker daemon.".yellow());
+        println!("{}", "   On macOS: Open Docker Desktop application".yellow());
+        println!("{}", "   On Linux: Run 'sudo systemctl start docker'".yellow());
+        anyhow::bail!("Docker daemon not running");
+    }
+
+    println!("{}", "✅ Docker daemon is running".green());
+
+    // Check if port 27017 is already in use
+    println!("{}", "🔍 Checking if port 27017 is available...".cyan());
+    let port_check = Command::new("lsof")
+        .args(&["-i", ":27017"])
+        .output();
+
+    if port_check.is_ok() && !port_check.as_ref().unwrap().stdout.is_empty() {
+        println!("{}", "⚠️  Port 27017 is already in use.".yellow());
+        println!("{}", "   This might be another MongoDB instance or the container is already running.".yellow());
+        println!("{}", "   You can either:".yellow());
+        println!("{}", "   1. Stop the existing service using port 27017".yellow());
+        println!("{}", "   2. Use a different port for this container".yellow());
+        println!("{}", "   3. Use an existing MongoDB connection instead".yellow());
+        println!();
+    } else {
+        println!("{}", "✅ Port 27017 is available".green());
+    }
+
     // Check if container exists
     println!("{}", "🔍 Checking for existing MongoDB container...".cyan());
     let container_check = Command::new("docker")
@@ -256,14 +269,57 @@ fn start_docker_mongodb() -> Result<()> {
     let container_exists = String::from_utf8_lossy(&container_check.stdout).contains("git-whisperer-mongo");
 
     if container_exists {
-        println!("{}", "📦 MongoDB container exists, starting it...".yellow());
-        let start_result = Command::new("docker")
-            .args(&["start", "git-whisperer-mongo"])
+        // Check if container is running
+        let status_check = Command::new("docker")
+            .args(&["ps", "--filter", "name=git-whisperer-mongo", "--format", "{{.Status}}"])
             .output()?;
 
-        if !start_result.status.success() {
-            println!("{}", "❌ Failed to start existing container.".red());
-            anyhow::bail!("Failed to start MongoDB container");
+        let is_running = !String::from_utf8_lossy(&status_check.stdout).is_empty();
+
+        if is_running {
+            println!("{}", "✅ MongoDB container is already running".green());
+        } else {
+            println!("{}", "📦 MongoDB container exists but is stopped, starting it...".yellow());
+            let start_result = Command::new("docker")
+                .args(&["start", "git-whisperer-mongo"])
+                .output()?;
+
+            if !start_result.status.success() {
+                let stderr = String::from_utf8_lossy(&start_result.stderr);
+                println!("{}", "❌ Failed to start existing container.".red());
+                println!("{}", format!("   Docker error: {}", stderr.trim()).red());
+                println!("{}", "💡 Trying to remove and recreate the container...".yellow());
+
+                // Remove the failed container
+                let _ = Command::new("docker")
+                    .args(&["rm", "-f", "git-whisperer-mongo"])
+                    .output();
+
+                // Now try to create a new one
+                println!("{}", "📦 Creating fresh MongoDB container...".yellow());
+                let run_result = Command::new("docker")
+                    .args(&[
+                        "run", "-d",
+                        "--name", "git-whisperer-mongo",
+                        "-p", "27017:27017",
+                        "mongo:7.0"
+                    ])
+                    .output()?;
+
+                if !run_result.status.success() {
+                    let stderr = String::from_utf8_lossy(&run_result.stderr);
+                    println!("{}", "❌ Failed to create MongoDB container.".red());
+                    println!("{}", format!("   Docker error: {}", stderr.trim()).red());
+                    println!();
+                    println!("{}", "💡 Troubleshooting suggestions:".yellow());
+                    println!("{}", "   1. Make sure Docker Desktop is running".yellow());
+                    println!("{}", "   2. Try: docker system prune -a (removes unused containers)".yellow());
+                    println!("{}", "   3. Check if another MongoDB is using port 27017".yellow());
+                    println!("{}", "   4. Use MongoDB Atlas instead (cloud, free tier)".yellow());
+                    println!();
+                    anyhow::bail!("Failed to create MongoDB container");
+                }
+            }
         }
     } else {
         println!("{}", "📦 Creating and starting MongoDB container...".yellow());
@@ -277,7 +333,16 @@ fn start_docker_mongodb() -> Result<()> {
             .output()?;
 
         if !run_result.status.success() {
+            let stderr = String::from_utf8_lossy(&run_result.stderr);
             println!("{}", "❌ Failed to create MongoDB container.".red());
+            println!("{}", format!("   Docker error: {}", stderr.trim()).red());
+            println!();
+            println!("{}", "💡 Troubleshooting suggestions:".yellow());
+            println!("{}", "   1. Make sure Docker Desktop is running".yellow());
+            println!("{}", "   2. Try: docker system prune -a (removes unused containers)".yellow());
+            println!("{}", "   3. Check if another MongoDB is using port 27017".yellow());
+            println!("{}", "   4. Use MongoDB Atlas instead (cloud, free tier)".yellow());
+            println!();
             anyhow::bail!("Failed to create MongoDB container");
         }
     }
