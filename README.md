@@ -74,8 +74,8 @@ Git Whisperer uses environment variables for configuration. The interactive setu
 
 - `GEMINI_API_KEY`: Your Google Gemini API key ([Get one here](https://makersuite.google.com/app/apikey))
 - `MONGODB_URL`: MongoDB connection string
-  - Docker: `mongodb://mongodb:27017/` (internal container networking)
-  - Local: `mongodb://localhost:27017/`
+  - Docker: `mongodb://admin:password@mongodb:27017/` (internal container networking)
+  - Local: `mongodb://admin:password@localhost:27017/`
   - Atlas: `mongodb+srv://user:pass@cluster.mongodb.net/...`
 - `MONGODB_DB`: Database name (default: `git_whisperer_db`)
 - `MONGODB_COLLECTION`: Collection name (default: `project_history`)

@@ -69,7 +69,7 @@ Create a `.env` file in the project root:
 GEMINI_API_KEY=your_gemini_api_key_here
 
 # MongoDB Configuration
-MONGODB_URL=mongodb://mongodb:27017/
+MONGODB_URL=mongodb://admin:password@mongodb:27017/
 MONGODB_DB=git_whisperer_db
 MONGODB_COLLECTION=project_history
 LOG_LEVEL=INFO
@@ -136,8 +136,9 @@ docker/
 
 ### Database Connection
 - MongoDB runs on port 27017 by default
-- Use `mongodb://mongodb:27017/` for inter-container communication
-- Use `mongodb://localhost:27017/` for external connections
+- MongoDB is configured with authentication (username: `admin`, password: `password`)
+- Use `mongodb://admin:password@mongodb:27017/` for inter-container communication
+- Use `mongodb://admin:password@localhost:27017/` for external connections
 
 ## Production Deployment
 
